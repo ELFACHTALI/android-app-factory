@@ -20,13 +20,20 @@ import androidx.core.app.ServiceCompat
 import com.elfachtali.bruitblanc.MainActivity
 import com.elfachtali.bruitblanc.R
 
-/** Keeps noise playing with the screen off and enforces the sleep timer. */
+/**
+ * Service de premier plan de type `mediaPlayback` : il garde le son actif écran éteint,
+ * affiche la notification avec le bouton Arrêt et applique la minuterie de sommeil.
+ *
+ * Il demande le focus audio et s'arrête si une autre app le prend durablement (appel,
+ * musique). Un wake lock partiel, limité à 12 h, empêche le processeur de s'endormir.
+ */
 class NoiseService : Service() {
     private val player = NoisePlayer({ Playback.state.value.type }, { Playback.state.value.volume })
     private val handler = Handler(Looper.getMainLooper())
     private var wakeLock: PowerManager.WakeLock? = null
     private var focusRequest: AudioFocusRequest? = null
 
+    // Vérifie chaque seconde si l'heure d'arrêt de la minuterie est atteinte.
     private val timerCheck = object : Runnable {
         override fun run() {
             val stopAt = Playback.state.value.stopAt
@@ -73,6 +80,7 @@ class NoiseService : Service() {
         super.onDestroy()
     }
 
+    /** Demande le focus audio ; renvoie false si le système le refuse (appel en cours, par exemple). */
     private fun requestFocus(): Boolean {
         val request = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
             .setAudioAttributes(
@@ -90,6 +98,7 @@ class NoiseService : Service() {
         return manager.requestAudioFocus(request) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
     }
 
+    /** Notification obligatoire du service : ouvre l'app au toucher, avec une action Arrêt. */
     private fun buildNotification(): Notification {
         val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         manager.createNotificationChannel(

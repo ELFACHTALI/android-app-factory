@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# One-time setup of the Play upload key, run in Google Cloud Shell (nothing to install):
+# Mise en place unique de la clé d'upload Play, à lancer dans Google Cloud Shell (rien à installer) :
 #
 #   git clone https://github.com/ELFACHTALI/android-app-factory && cd android-app-factory
-#   bash scripts/setup-signing.sh YOUR_GCP_PROJECT_ID
+#   bash scripts/setup-signing.sh ID_DU_PROJET_GCP     (l'ID texte, pas le numéro du projet)
 #
-# It generates the upload key inside Cloud Shell and stores it only in Secret Manager
-# (never printed), then lets GitHub Actions on the main branch of this repository read it
-# through Workload Identity Federation, so no key or password is stored in GitHub.
-# Safe to re-run: existing resources are kept.
+# Le script génère la clé d'upload dans Cloud Shell et la range uniquement dans Secret Manager
+# (elle n'est jamais affichée), puis autorise GitHub Actions, sur la branche main de ce dépôt
+# seulement, à la lire via Workload Identity Federation : aucun secret n'est stocké dans GitHub.
+# Il peut être relancé sans risque : les ressources existantes sont conservées.
 set -euo pipefail
 
 PROJECT_ID="${1:?Usage: bash scripts/setup-signing.sh PROJECT_ID}"
@@ -23,7 +23,7 @@ gcloud services enable secretmanager.googleapis.com iam.googleapis.com \
   iamcredentials.googleapis.com sts.googleapis.com
 PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')"
 
-# 1. Upload key: generated here, stored in Secret Manager, never shown.
+# 1. Clé d'upload : générée ici, rangée dans Secret Manager, jamais affichée.
 if ! gcloud secrets describe "$APP-upload-keystore" >/dev/null 2>&1; then
   TMP="$(mktemp -d)"
   trap 'rm -rf "$TMP"' EXIT
@@ -36,7 +36,7 @@ if ! gcloud secrets describe "$APP-upload-keystore" >/dev/null 2>&1; then
   unset PW
 fi
 
-# 2. Service account that GitHub Actions impersonates; it can only read these two secrets.
+# 2. Compte de service utilisé par GitHub Actions ; il ne peut lire que ces deux secrets.
 gcloud iam service-accounts describe "$SA" >/dev/null 2>&1 \
   || gcloud iam service-accounts create "$SA_NAME" --display-name="GitHub Actions signing"
 for secret in "$APP-upload-keystore" "$APP-upload-password"; do
@@ -44,7 +44,7 @@ for secret in "$APP-upload-keystore" "$APP-upload-password"; do
     --role=roles/secretmanager.secretAccessor >/dev/null
 done
 
-# 3. Workload Identity Federation, limited to the main branch of this repository.
+# 3. Workload Identity Federation, limitée à la branche main de ce dépôt.
 gcloud iam workload-identity-pools describe "$POOL" --location=global >/dev/null 2>&1 \
   || gcloud iam workload-identity-pools create "$POOL" --location=global --display-name="GitHub"
 gcloud iam workload-identity-pools providers describe "$PROVIDER" --location=global \

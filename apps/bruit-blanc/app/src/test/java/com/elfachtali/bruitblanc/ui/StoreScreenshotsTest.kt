@@ -15,8 +15,12 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 /**
- * Renders the Play Store phone screenshots (1233 x 2460 px, under the 2:1 limit) straight into
- * the Gradle Play Publisher listing folders. Run with `./gradlew recordRoborazziDebug`.
+ * Génère les captures d'écran du Play Store (1233 x 2460 px, sous la limite de ratio 2:1)
+ * directement dans les dossiers de fiche de Gradle Play Publisher (src/main/play/listings).
+ *
+ * Lancement : `./gradlew recordRoborazziDebug` (fait par la CI à chaque build).
+ * Robolectric dessine l'interface Compose sans émulateur ; les qualificateurs fixent la
+ * langue, la taille d'écran, le mode nuit et la densité (dans cet ordre, imposé par Android).
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)

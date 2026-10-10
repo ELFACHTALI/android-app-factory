@@ -8,7 +8,7 @@ on:
     paths: ['apps/bruit-blanc/**', '.github/workflows/bruit-blanc.yml']
   workflow_dispatch:
 
-# Output of scripts/setup-signing.sh (not secret).
+# Valeurs affichées par scripts/setup-signing.sh (non secrètes).
 env:
   WIF_PROVIDER: projects/999140038701/locations/global/workloadIdentityPools/github/providers/github-actions
   SIGNING_SERVICE_ACCOUNT: github-signing@android-app-factory-511217.iam.gserviceaccount.com
@@ -32,7 +32,7 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      # recordRoborazziDebug runs the unit tests and renders the store screenshots.
+      # recordRoborazziDebug lance les tests unitaires et génère les captures du Play Store.
       - name: Unit tests, store screenshots, lint and debug build
         run: ./gradlew --no-daemon recordRoborazziDebug lintDebug assembleDebug
 
@@ -42,7 +42,7 @@ jobs:
           name: store-listing
           path: apps/bruit-blanc/app/src/main/play
 
-      # Also publish the listing to the store-listing branch, so it can be browsed on GitHub.
+      # Publie aussi la fiche sur la branche store-listing, consultable directement sur GitHub.
       - name: Publish listing to the store-listing branch
         if: github.ref == 'refs/heads/main'
         run: |
@@ -60,8 +60,8 @@ jobs:
           name: debug-apk
           path: apps/bruit-blanc/app/build/outputs/apk/debug/*.apk
 
-      # Signed release bundle on main only. The upload key lives in Secret Manager and is
-      # read through Workload Identity Federation, so GitHub stores no key or password.
+      # Bundle release signé, sur main uniquement. La clé d'upload est dans Secret Manager et
+      # lue via Workload Identity Federation : GitHub ne stocke ni clé ni mot de passe.
       - name: Authenticate to Google Cloud
         id: gcp
         if: github.ref == 'refs/heads/main' && env.WIF_PROVIDER != ''

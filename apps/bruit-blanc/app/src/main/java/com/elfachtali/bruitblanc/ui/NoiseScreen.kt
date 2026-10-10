@@ -46,6 +46,7 @@ import com.elfachtali.bruitblanc.audio.NoiseType
 import com.elfachtali.bruitblanc.audio.Playback
 import kotlinx.coroutines.delay
 
+/** Une carte de choix de bruit : son type, son nom et sa description courte. */
 private data class NoiseOption(val type: NoiseType, @param:StringRes val name: Int, @param:StringRes val hint: Int)
 
 private val noiseOptions = listOf(
@@ -54,8 +55,16 @@ private val noiseOptions = listOf(
     NoiseOption(NoiseType.BROWN, R.string.noise_brown, R.string.noise_brown_hint),
 )
 
+/** Durées de minuterie proposées, en minutes ; null = pas de minuterie. */
 private val timerOptions = listOf<Int?>(null, 15, 30, 60, 120, 480)
 
+/**
+ * Écran principal : choix du bruit, bouton lecture/arrêt, volume et minuterie.
+ *
+ * L'écran n'a pas d'état propre hormis l'horloge du compte à rebours : tout vient de
+ * [Playback.state]. Au premier lancement de la lecture sur Android 13+, il demande
+ * l'autorisation d'afficher la notification du service.
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NoiseScreen() {
@@ -63,6 +72,7 @@ fun NoiseScreen() {
     val state by Playback.state.collectAsStateWithLifecycle()
     val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
+    // Horloge du compte à rebours, rafraîchie chaque seconde seulement quand une minuterie est active.
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(state.stopAt) {
         while (state.stopAt != null) {
@@ -166,8 +176,10 @@ private fun timerLabel(minutes: Int?): String = when {
     else -> stringResource(R.string.hours, minutes / 60)
 }
 
+/** Minutes restantes avant [stopAt], arrondies au supérieur (sert à surligner la bonne durée). */
 private fun remainingMinutes(stopAt: Long, now: Long): Int = ((stopAt - now + 59_999) / 60_000).toInt()
 
+/** Formate une durée en « m:ss » ou « h:mm:ss ». */
 private fun formatRemaining(ms: Long): String {
     val total = (ms.coerceAtLeast(0) / 1_000).toInt()
     val h = total / 3_600

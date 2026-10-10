@@ -2,11 +2,29 @@ package com.elfachtali.bruitblanc.audio
 
 import kotlin.random.Random
 
-enum class NoiseType { WHITE, PINK, BROWN }
+/** Les trois couleurs de bruit proposées dans l'app. */
+enum class NoiseType {
+    /** Énergie égale sur toutes les fréquences : souffle aigu, masque bien les voix. */
+    WHITE,
+
+    /** Énergie qui baisse de 3 dB par octave : plus doux, proche de la pluie. */
+    PINK,
+
+    /** Énergie qui baisse de 6 dB par octave : grondement grave, proche d'une cascade. */
+    BROWN,
+}
 
 /**
- * Generates noise samples in [-1, 1] entirely in code, so the app ships no audio files.
- * Pink noise uses Paul Kellet's economy filter; brown noise is leaky-integrated white noise.
+ * Génère les échantillons de bruit dans [-1, 1] entièrement par le code : l'app ne contient
+ * aucun fichier audio, donc aucun droit d'auteur ni boucle audible.
+ *
+ * - Bruit rose : filtre « economy » de Paul Kellet (trois filtres passe-bas en parallèle).
+ * - Bruit brun : bruit blanc intégré avec une fuite, pour ne pas dériver hors de [-1, 1].
+ *
+ * Les états des filtres sont conservés d'un appel à l'autre pour que le son reste continu
+ * entre deux buffers. Une instance n'est pas thread-safe : un seul thread l'utilise.
+ *
+ * @param random source aléatoire, injectable pour des tests reproductibles.
  */
 class NoiseGenerator(private val random: Random = Random.Default) {
     private var b0 = 0.0
@@ -14,6 +32,7 @@ class NoiseGenerator(private val random: Random = Random.Default) {
     private var b2 = 0.0
     private var brown = 0.0
 
+    /** Remplit [out] avec des échantillons de bruit [type], de niveau comparable entre les types. */
     fun fill(type: NoiseType, out: FloatArray) {
         for (i in out.indices) {
             val white = random.nextDouble(-1.0, 1.0)

@@ -5,6 +5,7 @@ import kotlin.random.Random
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+/** Vérifie que chaque type de bruit reste dans [-1, 1] sans être trop faible. */
 class NoiseGeneratorTest {
     @Test
     fun samplesStayInRangeAndAreNotSilent() {

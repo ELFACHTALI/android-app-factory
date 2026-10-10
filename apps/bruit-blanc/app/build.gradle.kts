@@ -5,7 +5,9 @@ plugins {
     alias(libs.plugins.roborazzi)
 }
 
-// Release signing comes from environment variables set by CI (see .github/workflows/build.yml).
+// La signature release vient de variables d'environnement fournies par la CI
+// (.github/workflows/bruit-blanc.yml) : la clé d'upload est lue dans Secret Manager.
+// Sans UPLOAD_KEYSTORE_PATH, le build release n'est pas signé (cas des builds locaux).
 val uploadKeystore = System.getenv("UPLOAD_KEYSTORE_PATH")
 
 android {
@@ -16,6 +18,7 @@ android {
         applicationId = "com.elfachtali.bruitblanc"
         minSdk = 26
         targetSdk = 36
+        // Numéro de version Play : le numéro de run GitHub Actions, toujours croissant.
         versionCode = (System.getenv("VERSION_CODE") ?: "1").toInt()
         versionName = "1.0.0"
     }

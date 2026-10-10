@@ -5,7 +5,16 @@ import android.media.AudioFormat
 import android.media.AudioTrack
 import kotlin.concurrent.thread
 
-/** Streams generated noise to an [AudioTrack] on a background thread until [stop] is called. */
+/**
+ * Joue le bruit généré en continu sur un [AudioTrack] (PCM float mono, 44,1 kHz), depuis un
+ * thread dédié, jusqu'à l'appel de [stop].
+ *
+ * Le type et le volume sont relus à chaque buffer (environ 93 ms), donc un changement dans
+ * l'interface s'entend presque immédiatement, sans redémarrer la lecture.
+ *
+ * @param currentType lit le type de bruit courant.
+ * @param currentVolume lit le volume courant, entre 0 et 1.
+ */
 class NoisePlayer(
     private val currentType: () -> NoiseType,
     private val currentVolume: () -> Float,
@@ -13,12 +22,14 @@ class NoisePlayer(
     @Volatile private var running = false
     private var worker: Thread? = null
 
+    /** Démarre la lecture ; sans effet si elle est déjà en cours. */
     fun start() {
         if (running) return
         running = true
         worker = thread(name = "noise-player", priority = Thread.MAX_PRIORITY) { play() }
     }
 
+    /** Demande l'arrêt, puis attend (1 s au plus) le fondu de sortie et la libération de l'AudioTrack. */
     fun stop() {
         running = false
         worker?.join(1_000)
@@ -54,13 +65,13 @@ class NoisePlayer(
                 generator.fill(currentType(), buffer)
                 val target = currentVolume()
                 for (i in buffer.indices) {
-                    // Smooth ramp avoids clicks on start and when the volume changes.
+                    // Rampe douce du gain : évite les clics au démarrage et quand le volume change.
                     gain += (target - gain) * RAMP
                     buffer[i] *= gain
                 }
                 track.write(buffer, 0, buffer.size, AudioTrack.WRITE_BLOCKING)
             }
-            // Fade out before stopping.
+            // Fondu de sortie sur un dernier buffer avant l'arrêt, pour éviter un clic.
             generator.fill(currentType(), buffer)
             for (i in buffer.indices) buffer[i] *= gain * (1f - i.toFloat() / buffer.size)
             track.write(buffer, 0, buffer.size, AudioTrack.WRITE_BLOCKING)
@@ -73,6 +84,7 @@ class NoisePlayer(
     private companion object {
         const val SAMPLE_RATE = 44_100
         const val CHUNK = 4_096
+        /** Part de l'écart de gain rattrapée à chaque échantillon (environ 0,1 s pour converger). */
         const val RAMP = 0.0002f
     }
 }
