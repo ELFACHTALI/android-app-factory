@@ -1,0 +1,1 @@
+First release: white, pink and brown noise, sleep timer, background playback.

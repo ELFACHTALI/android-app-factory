@@ -32,8 +32,15 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Unit tests, lint and debug build
-        run: ./gradlew --no-daemon testDebugUnitTest lintDebug assembleDebug
+      # recordRoborazziDebug runs the unit tests and renders the store screenshots.
+      - name: Unit tests, store screenshots, lint and debug build
+        run: ./gradlew --no-daemon recordRoborazziDebug lintDebug assembleDebug
+
+      - name: Upload store listing
+        uses: actions/upload-artifact@v4
+        with:
+          name: store-listing
+          path: apps/bruit-blanc/app/src/main/play
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4

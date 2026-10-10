@@ -3,13 +3,11 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- Crescent moon above sound-wave bars, inside the 66dp safe zone. Same paths as store-art/icon.html. -->
     <path
         android:fillColor="#E3E5F0"
-        android:pathData="M58,30 A14,14 0 1,0 72,46 A11,11 0 1,1 58,30 Z" />
-    <path android:fillColor="#9FB4FF" android:pathData="M35,64 h4 v12 h-4 Z" />
-    <path android:fillColor="#9FB4FF" android:pathData="M42,58 h4 v24 h-4 Z" />
-    <path android:fillColor="#9FB4FF" android:pathData="M49,62 h4 v16 h-4 Z" />
-    <path android:fillColor="#9FB4FF" android:pathData="M56,55 h4 v30 h-4 Z" />
-    <path android:fillColor="#9FB4FF" android:pathData="M63,61 h4 v18 h-4 Z" />
-    <path android:fillColor="#9FB4FF" android:pathData="M70,66 h4 v8 h-4 Z" />
+        android:pathData="M52.34,25.11 A13,13 0 1,0 66.38,41.96 A11,11 0 0,1 52.34,25.11 Z" />
+    <path
+        android:fillColor="#9FB4FF"
+        android:pathData="M35,67 h4 v10 h-4 Z M42,62 h4 v20 h-4 Z M49,65 h4 v14 h-4 Z M56,59 h4 v26 h-4 Z M63,64 h4 v16 h-4 Z M70,68 h4 v8 h-4 Z" />
 </vector>
