@@ -17,7 +17,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       id-token: write
     defaults:
       run:
@@ -41,6 +41,18 @@ jobs:
         with:
           name: store-listing
           path: apps/bruit-blanc/app/src/main/play
+
+      # Also publish the listing to the store-listing branch, so it can be browsed on GitHub.
+      - name: Publish listing to the store-listing branch
+        if: github.ref == 'refs/heads/main'
+        run: |
+          cp -r app/src/main/play "$RUNNER_TEMP/play"
+          cd "$RUNNER_TEMP/play"
+          git init -q -b store-listing
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "Store listing from ${GITHUB_SHA}"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}" store-listing
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
