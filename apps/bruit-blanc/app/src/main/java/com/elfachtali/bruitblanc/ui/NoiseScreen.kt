@@ -118,10 +118,11 @@ fun NoiseScreen() {
 
             Spacer(Modifier.height(8.dp))
             Text(stringResource(R.string.timer), style = MaterialTheme.typography.titleSmall)
+            val stopAt = state.stopAt
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)) {
                 timerOptions.forEach { minutes ->
-                    val selected = if (minutes == null) state.stopAt == null else
-                        state.stopAt != null && remainingMinutes(state.stopAt, now) in (minutes - 1)..minutes
+                    val selected = if (minutes == null) stopAt == null else
+                        stopAt != null && remainingMinutes(stopAt, now) in (minutes - 1)..minutes
                     FilterChip(
                         selected = selected,
                         onClick = { Playback.setTimer(minutes); now = System.currentTimeMillis() },
@@ -129,7 +130,6 @@ fun NoiseScreen() {
                     )
                 }
             }
-            val stopAt = state.stopAt
             Text(
                 if (stopAt != null) stringResource(R.string.stops_in, formatRemaining(stopAt - now)) else "",
                 style = MaterialTheme.typography.bodyMedium,
