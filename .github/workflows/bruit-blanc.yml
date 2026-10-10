@@ -8,9 +8,18 @@ on:
     paths: ['apps/bruit-blanc/**', '.github/workflows/bruit-blanc.yml']
   workflow_dispatch:
 
+# Filled in after running scripts/setup-signing.sh in Cloud Shell (not secret).
+# While empty, the signed bundle is skipped.
+env:
+  WIF_PROVIDER: ''
+  SIGNING_SERVICE_ACCOUNT: ''
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     defaults:
       run:
         working-directory: apps/bruit-blanc
@@ -33,32 +42,36 @@ jobs:
           name: debug-apk
           path: apps/bruit-blanc/app/build/outputs/apk/debug/*.apk
 
-      # Signed release bundle, only when the upload key secrets exist (never on forks or PRs).
-      - name: Decode upload key
-        id: key
-        if: github.event_name != 'pull_request'
-        env:
-          UPLOAD_KEYSTORE_BASE64: ${{ secrets.UPLOAD_KEYSTORE_BASE64 }}
-        run: |
-          if [ -z "$UPLOAD_KEYSTORE_BASE64" ]; then
-            echo "No upload key configured; skipping the signed bundle."
-            exit 0
-          fi
-          echo "$UPLOAD_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
-          echo "path=$RUNNER_TEMP/upload.jks" >> "$GITHUB_OUTPUT"
+      # Signed release bundle on main only. The upload key lives in Secret Manager and is
+      # read through Workload Identity Federation, so GitHub stores no key or password.
+      - name: Authenticate to Google Cloud
+        id: gcp
+        if: github.ref == 'refs/heads/main' && env.WIF_PROVIDER != ''
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.SIGNING_SERVICE_ACCOUNT }}
+
+      - name: Fetch upload key
+        if: steps.gcp.outcome == 'success'
+        uses: google-github-actions/setup-gcloud@v2
 
       - name: Signed release bundle
-        if: steps.key.outputs.path != ''
+        if: steps.gcp.outcome == 'success'
         env:
-          UPLOAD_KEYSTORE_PATH: ${{ steps.key.outputs.path }}
-          UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
-          UPLOAD_KEY_ALIAS: ${{ secrets.UPLOAD_KEY_ALIAS }}
-          UPLOAD_KEY_PASSWORD: ${{ secrets.UPLOAD_KEY_PASSWORD }}
           VERSION_CODE: ${{ github.run_number }}
-        run: ./gradlew --no-daemon bundleRelease
+        run: |
+          gcloud secrets versions access latest --secret=bruit-blanc-upload-keystore \
+            --out-file="$RUNNER_TEMP/upload.jks"
+          PW="$(gcloud secrets versions access latest --secret=bruit-blanc-upload-password)"
+          echo "::add-mask::$PW"
+          UPLOAD_KEYSTORE_PATH="$RUNNER_TEMP/upload.jks" UPLOAD_KEYSTORE_PASSWORD="$PW" \
+            UPLOAD_KEY_PASSWORD="$PW" UPLOAD_KEY_ALIAS=upload \
+            ./gradlew --no-daemon bundleRelease
+          rm -f "$RUNNER_TEMP/upload.jks"
 
       - name: Upload release bundle
-        if: steps.key.outputs.path != ''
+        if: steps.gcp.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: release-aab

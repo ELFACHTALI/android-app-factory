@@ -12,4 +12,4 @@ Application Android de bruit blanc, rose et brun, sans publicité et hors ligne,
 ./gradlew testDebugUnitTest assembleDebug
 ```
 
-Le workflow `.github/workflows/build.yml` construit et teste chaque push. Le bundle signé (`bundleRelease`) n'est produit que si les secrets `UPLOAD_KEYSTORE_BASE64`, `UPLOAD_KEYSTORE_PASSWORD`, `UPLOAD_KEY_ALIAS` et `UPLOAD_KEY_PASSWORD` sont configurés.
+Le workflow `.github/workflows/bruit-blanc.yml` construit et teste chaque push. Sur `main`, il produit aussi le bundle signé (`bundleRelease`) : la clé d'upload est gardée dans Secret Manager (GCP) et lue via Workload Identity Federation, sans aucun secret dans GitHub. Mise en place unique : `scripts/setup-signing.sh`, à lancer dans Cloud Shell.
