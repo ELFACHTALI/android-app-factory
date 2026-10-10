@@ -9,8 +9,8 @@ L'usine prend un nom et une idée d'app, puis des agents Claude écrivent l'app,
 | App POC `apps/bruit-blanc` | Faite : code, tests, captures, fiche Play FR/EN |
 | CI GitHub Actions | Faite : tests, lint, APK debug, bundle signé, fiche publiée sur la branche `store-listing` |
 | Clé d'upload | Faite : dans Secret Manager (projet `android-app-factory-511217`), lue via Workload Identity Federation |
-| Création de l'app dans la Play Console | À faire par l'utilisateur (Google ne permet pas de la créer par API) |
-| Publication automatique (API Play Developer) | À faire |
+| Création de l'app dans la Play Console | Faite à la main (Google ne permet pas de la créer par API) ; version 8 (1.0.0) déposée à la main en test interne |
+| Publication automatique (API Play Developer) | Prête dans la CI (Gradle Play Publisher), désactivée tant que `PLAY_PUBLISH` vaut `false` : il faut inviter le compte de service dans la Play Console |
 | Usine (service Cloud Run + agents) | À faire |
 | GitHub App de l'usine (création des dépôts) | À faire |
 
@@ -51,6 +51,7 @@ Le workflow `.github/workflows/bruit-blanc.yml` se lance à chaque push ou PR qu
 2. `lintDebug` et `assembleDebug` : analyse statique et APK de test (artefact `debug-apk`).
 3. Publication de la fiche générée : artefact `store-listing` et branche `store-listing`.
 4. Sur `main` seulement : authentification à GCP par Workload Identity Federation, lecture de la clé d'upload dans Secret Manager, puis `bundleRelease` signé (artefact `release-aab`). Le `versionCode` est le numéro de run GitHub Actions.
+5. Si `PLAY_PUBLISH` vaut `true` : `publishReleaseBundle` et `publishReleaseListing` envoient le bundle, les textes, les visuels et les notes de version sur la piste de test interne, avec le même compte de service (`github-signing`), qui doit être invité dans la Play Console.
 
 Sécurité : la clé ne quitte jamais GCP et ne passe que par le runner GitHub, le temps du build. Le compte de service `github-signing` ne peut lire que les deux secrets de la clé, et seule la branche `main` de ce dépôt peut l'utiliser. En cas de perte, Play App Signing permet de réinitialiser la clé d'upload, puisque c'est Google qui conserve la clé de signature finale.
 

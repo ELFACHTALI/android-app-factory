@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.roborazzi)
+    alias(libs.plugins.play.publisher)
 }
 
 // La signature release vient de variables d'environnement fournies par la CI
@@ -55,6 +56,15 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
+}
+
+// Publication Google Play (Gradle Play Publisher) : bundle, textes, visuels et notes de version
+// viennent de src/main/play. Les identifiants sont ceux de l'environnement (Application Default
+// Credentials), fournis en CI par Workload Identity Federation : aucune clé JSON.
+play {
+    track.set("internal")
+    defaultToAppBundles.set(true)
+    useApplicationDefaultCredentials.set(true)
 }
 
 kotlin {

@@ -19,8 +19,9 @@ SA_NAME="github-signing"
 SA="$SA_NAME@$PROJECT_ID.iam.gserviceaccount.com"
 
 gcloud config set project "$PROJECT_ID" >/dev/null
+# androidpublisher : API Google Play Developer, utilisée par la CI pour publier.
 gcloud services enable secretmanager.googleapis.com iam.googleapis.com \
-  iamcredentials.googleapis.com sts.googleapis.com
+  iamcredentials.googleapis.com sts.googleapis.com androidpublisher.googleapis.com
 PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')"
 
 # 1. Clé d'upload : générée ici, rangée dans Secret Manager, jamais affichée.

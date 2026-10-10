@@ -12,6 +12,9 @@ on:
 env:
   WIF_PROVIDER: projects/999140038701/locations/global/workloadIdentityPools/github/providers/github-actions
   SIGNING_SERVICE_ACCOUNT: github-signing@android-app-factory-511217.iam.gserviceaccount.com
+  # Passe à 'true' quand ce compte de service est invité dans la Play Console : chaque push sur
+  # main publie alors le bundle et la fiche sur la piste de test interne.
+  PLAY_PUBLISH: 'false'
 
 jobs:
   build:
@@ -74,7 +77,7 @@ jobs:
         if: steps.gcp.outcome == 'success'
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Signed release bundle
+      - name: Signed release bundle (and Play publishing when enabled)
         if: steps.gcp.outcome == 'success'
         env:
           VERSION_CODE: ${{ github.run_number }}
@@ -83,9 +86,13 @@ jobs:
             --out-file="$RUNNER_TEMP/upload.jks"
           PW="$(gcloud secrets versions access latest --secret=bruit-blanc-upload-password)"
           echo "::add-mask::$PW"
+          TASKS=bundleRelease
+          if [ "$PLAY_PUBLISH" = "true" ]; then
+            TASKS="publishReleaseBundle publishReleaseListing"
+          fi
           UPLOAD_KEYSTORE_PATH="$RUNNER_TEMP/upload.jks" UPLOAD_KEYSTORE_PASSWORD="$PW" \
             UPLOAD_KEY_PASSWORD="$PW" UPLOAD_KEY_ALIAS=upload \
-            ./gradlew --no-daemon bundleRelease
+            ./gradlew --no-daemon $TASKS
           rm -f "$RUNNER_TEMP/upload.jks"
 
       - name: Upload release bundle

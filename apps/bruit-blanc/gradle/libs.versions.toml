@@ -9,6 +9,7 @@ junit = "4.13.2"
 coroutines = "1.10.2"
 robolectric = "4.16"
 roborazzi = "1.50.0"
+playPublisher = "3.12.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -30,5 +31,6 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+play-publisher = { id = "com.github.triplet.play", version.ref = "playPublisher" }
 roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
