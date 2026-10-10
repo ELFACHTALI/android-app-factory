@@ -6,15 +6,23 @@ on:
     paths: ['apps/bruit-blanc/**', '.github/workflows/bruit-blanc.yml']
   pull_request:
     paths: ['apps/bruit-blanc/**', '.github/workflows/bruit-blanc.yml']
+  # Lancement manuel (onglet Actions > bruit-blanc > Run workflow), avec ou sans publication Play.
   workflow_dispatch:
+    inputs:
+      publish:
+        description: Publier sur la piste de test interne Google Play
+        type: boolean
+        default: true
 
 # Valeurs affichées par scripts/setup-signing.sh (non secrètes).
 env:
   WIF_PROVIDER: projects/999140038701/locations/global/workloadIdentityPools/github/providers/github-actions
   SIGNING_SERVICE_ACCOUNT: github-signing@android-app-factory-511217.iam.gserviceaccount.com
-  # Ce compte de service est invité dans la Play Console : chaque push sur main publie le bundle
-  # et la fiche sur la piste de test interne. Mettre 'false' pour ne faire que le bundle signé.
-  PLAY_PUBLISH: 'true'
+  # Publication sur la piste de test interne : sur lancement manuel (case « publish »), ou à
+  # chaque push sur main si AUTO_PUBLISH vaut 'true'. Désactivée sur push tant que la Play Console
+  # refuse le commit (403, droits du compte de service en cours d'application, voir docs/JOURNAL.md).
+  AUTO_PUBLISH: 'false'
+  PLAY_PUBLISH: ${{ (github.event_name == 'workflow_dispatch' && inputs.publish) && 'true' || '' }}
 
 jobs:
   build:
@@ -33,14 +41,14 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v5
 
       # recordRoborazziDebug lance les tests unitaires et génère les captures du Play Store.
       - name: Unit tests, store screenshots, lint and debug build
         run: ./gradlew --no-daemon recordRoborazziDebug lintDebug assembleDebug
 
       - name: Upload store listing
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: store-listing
           path: apps/bruit-blanc/app/src/main/play
@@ -58,7 +66,7 @@ jobs:
           git push -q -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}" store-listing
 
       - name: Upload debug APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: debug-apk
           path: apps/bruit-blanc/app/build/outputs/apk/debug/*.apk
@@ -68,20 +76,21 @@ jobs:
       - name: Authenticate to Google Cloud
         id: gcp
         if: github.ref == 'refs/heads/main' && env.WIF_PROVIDER != ''
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ env.WIF_PROVIDER }}
           service_account: ${{ env.SIGNING_SERVICE_ACCOUNT }}
 
       - name: Fetch upload key
         if: steps.gcp.outcome == 'success'
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v3
 
       - name: Signed release bundle (and Play publishing when enabled)
         if: steps.gcp.outcome == 'success'
         env:
           VERSION_CODE: ${{ github.run_number }}
         run: |
+          if [ "$AUTO_PUBLISH" = "true" ] && [ "$GITHUB_EVENT_NAME" = "push" ]; then PLAY_PUBLISH=true; fi
           gcloud secrets versions access latest --secret=bruit-blanc-upload-keystore \
             --out-file="$RUNNER_TEMP/upload.jks"
           PW="$(gcloud secrets versions access latest --secret=bruit-blanc-upload-password)"
@@ -100,7 +109,7 @@ jobs:
 
       - name: Upload release bundle
         if: steps.gcp.outcome == 'success'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: release-aab
           path: apps/bruit-blanc/app/build/outputs/bundle/release/*.aab

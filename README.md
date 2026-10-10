@@ -8,12 +8,14 @@ Proposition complète (outils, architecture, contraintes Play, plan du POC) : ht
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) : ce qui existe, comment les pièces s'assemblent, chaîne de build et de signature.
 - [docs/JOURNAL.md](docs/JOURNAL.md) : chaque erreur rencontrée, sa cause et sa résolution.
+- [docs/PLAY_CONSOLE.md](docs/PLAY_CONSOLE.md) : réponses prêtes pour les questionnaires de la Play Console.
 - [CLAUDE.md](CLAUDE.md) : consignes de travail pour Claude et les agents.
 
 ## Contenu
 
 - `apps/bruit-blanc/` : l'app du POC (bruit blanc, rose et brun, sans pub, vendue 1 €). Elle sert de référence et de base au modèle d'app ; à terme l'usine créera chaque app dans son propre dépôt.
-- `.github/workflows/bruit-blanc.yml` : tests, captures du Play Store, lint, build debug et bundle signé de l'app.
+- `.github/workflows/bruit-blanc.yml` : tests, captures du Play Store, lint, build debug, bundle signé et publication en test interne sur Google Play.
+- `apps/bruit-blanc/PRIVACY.md` : politique de confidentialité de l'app (URL à donner à la Play Console).
 - `scripts/setup-signing.sh` : mise en place unique de la clé d'upload dans Secret Manager (Cloud Shell).
 - Branche `store-listing` : fiche Play générée par la CI (textes, icône, bannière, captures), consultable sur GitHub.
 
@@ -21,4 +23,3 @@ Proposition complète (outils, architecture, contraintes Play, plan du POC) : ht
 
 - `factory/` : service Cloud Run (entrée : nom de l'app) et job Cloud Run des agents (Claude Agent SDK).
 - GitHub App de l'usine, pour créer les dépôts des apps automatiquement.
-- Publication sur Google Play via l'API Play Developer.

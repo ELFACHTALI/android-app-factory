@@ -11,6 +11,7 @@ Format : **Symptôme** (ce qu'on a vu), **Cause**, **Résolution**, **Référenc
 - **Symptôme** : (1) premier run avec `PLAY_PUBLISH: 'true'` : le bundle est envoyé, puis `commitEdit` échoue en « 403 The caller does not have permission ». (2) Relance quelques minutes après : `publishReleaseListing` échoue en « 404 Listing for language 'en-US' not found » sur `featureGraphic`, et rien n'est validé.
 - **Cause** : (1) le compte de service venait d'être invité dans la Play Console ; Google indique que les autorisations peuvent mettre jusqu'à 24 h à s'appliquer à l'API. (2) La fiche anglaise n'existe pas encore dans la Play Console (l'app a été créée en fr-FR) et Gradle Play Publisher envoie les visuels en parallèle des textes : l'envoi d'une image sur une langue absente échoue. Comme le bundle et la fiche partageaient la même « edit », l'erreur de la fiche annulait aussi le bundle.
 - **Résolution** : le bundle et la fiche sont publiés par deux appels Gradle séparés, donc deux « edits » ; le bundle part même si la fiche échoue. La langue anglaise (en-US) est ajoutée une fois à la main dans la Play Console (Fiche Play Store principale > Gérer les traductions), après quoi la CI met à jour les deux langues.
+- **Suite** : troisième essai, bundle seul : toujours 403 au commit, alors que l'envoi du bundle réussit (le compte de service est donc reconnu). En attendant que les droits s'appliquent, la publication n'est plus lancée à chaque push (sinon chaque push sur `main` serait rouge) : elle se lance à la main depuis l'onglet Actions (« Run workflow », case « publish »). Quand un lancement manuel réussit, mettre `AUTO_PUBLISH: 'true'` dans le workflow. Si le 403 persiste après 24 h, vérifier dans la Play Console que le compte a bien « Publier des applications dans des canaux de test » pour Bruit blanc, et supprimer la release brouillon « Release sans nom » de la piste de test interne.
 - **Référence** : `.github/workflows/bruit-blanc.yml`, étape « Signed release bundle ».
 
 ## 2026-10-10 · Artefacts GitHub Actions impossibles à télécharger depuis la session Claude
@@ -78,7 +79,7 @@ Format : **Symptôme** (ce qu'on a vu), **Cause**, **Résolution**, **Référenc
 
 - **Symptôme** : avertissements sur `actions/checkout@v4` et `actions/setup-java@v4`.
 - **Cause** : GitHub retire Node.js 20 des runners.
-- **Résolution** : passage à `checkout@v5` et `setup-java@v5`. Il reste des avertissements non bloquants sur `setup-gradle@v4`, `upload-artifact@v4` et les actions Google, à mettre à jour quand leurs versions Node 24 seront confirmées.
+- **Résolution** : passage à `checkout@v5` et `setup-java@v5`, puis (le 10/10 au soir) à `upload-artifact@v6`, `setup-gradle@v5`, `google-github-actions/auth@v3` et `setup-gcloud@v3`, versions prévues pour Node 24.
 
 ## 2026-10-10 · Erreur de compilation : « Smart cast to 'Long' is impossible, because 'stopAt' is a delegated property »
 

@@ -10,7 +10,7 @@ L'usine prend un nom et une idée d'app, puis des agents Claude écrivent l'app,
 | CI GitHub Actions | Faite : tests, lint, APK debug, bundle signé, fiche publiée sur la branche `store-listing` |
 | Clé d'upload | Faite : dans Secret Manager (projet `android-app-factory-511217`), lue via Workload Identity Federation |
 | Création de l'app dans la Play Console | Faite à la main (Google ne permet pas de la créer par API) ; version 8 (1.0.0) déposée à la main en test interne |
-| Publication automatique (API Play Developer) | Active : chaque push sur `main` publie en test interne (Gradle Play Publisher, compte de service `github-signing` invité dans la Play Console) |
+| Publication automatique (API Play Developer) | Branchée (Gradle Play Publisher, compte de service `github-signing` invité dans la Play Console) ; lancement manuel depuis l'onglet Actions tant que la Play Console répond 403 au commit, puis automatique avec `AUTO_PUBLISH` |
 | Usine (service Cloud Run + agents) | À faire |
 | GitHub App de l'usine (création des dépôts) | À faire |
 
@@ -30,13 +30,13 @@ android-app-factory/
 
 ## App Bruit blanc
 
-Kotlin, Jetpack Compose (Material 3), minSdk 26, targetSdk 36. Aucun fichier audio, aucune donnée collectée, aucune connexion réseau.
+Kotlin, Jetpack Compose (Material 3), minSdk 26, targetSdk 36. Aucun fichier audio, aucune donnée collectée, aucune connexion réseau (voir la [politique de confidentialité](../apps/bruit-blanc/PRIVACY.md) et les [réponses aux questionnaires de la Play Console](PLAY_CONSOLE.md)).
 
 | Fichier | Rôle |
 | --- | --- |
 | `audio/NoiseGenerator.kt` | Génère les échantillons de bruit blanc, rose et brun |
 | `audio/NoisePlayer.kt` | Joue le flux en continu sur un `AudioTrack`, avec rampe de volume et fondu de sortie |
-| `audio/Playback.kt` | État partagé (type, volume, lecture, minuterie) entre l'interface et le service |
+| `audio/Playback.kt` | État partagé (type, volume, lecture, minuterie) entre l'interface et le service ; mémorise le type et le volume |
 | `audio/NoiseService.kt` | Service de premier plan `mediaPlayback` : lecture écran éteint, notification, focus audio, minuterie |
 | `ui/NoiseScreen.kt` | L'unique écran : choix du bruit, lecture, volume, minuterie |
 | `ui/theme/Theme.kt` | Thème de nuit |
@@ -51,7 +51,7 @@ Le workflow `.github/workflows/bruit-blanc.yml` se lance à chaque push ou PR qu
 2. `lintDebug` et `assembleDebug` : analyse statique et APK de test (artefact `debug-apk`).
 3. Publication de la fiche générée : artefact `store-listing` et branche `store-listing`.
 4. Sur `main` seulement : authentification à GCP par Workload Identity Federation, lecture de la clé d'upload dans Secret Manager, puis `bundleRelease` signé (artefact `release-aab`). Le `versionCode` est le numéro de run GitHub Actions.
-5. Si `PLAY_PUBLISH` vaut `true` : `publishReleaseBundle` et `publishReleaseListing` envoient le bundle, les textes, les visuels et les notes de version sur la piste de test interne, avec le même compte de service (`github-signing`), qui doit être invité dans la Play Console.
+5. Publication (lancement manuel avec la case « publish », ou à chaque push si `AUTO_PUBLISH` vaut `true`) : `publishReleaseBundle` puis `publishReleaseListing`, en deux « edits » séparées, envoient le bundle, puis les textes, les visuels et les notes de version sur la piste de test interne, avec le même compte de service (`github-signing`).
 
 Sécurité : la clé ne quitte jamais GCP et ne passe que par le runner GitHub, le temps du build. Le compte de service `github-signing` ne peut lire que les deux secrets de la clé, et seule la branche `main` de ce dépôt peut l'utiliser. En cas de perte, Play App Signing permet de réinitialiser la clé d'upload, puisque c'est Google qui conserve la clé de signature finale.
 
