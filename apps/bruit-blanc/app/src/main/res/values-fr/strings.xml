@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Bruit blanc</string>
+    <string name="tagline">Sommeil, concentration, calme. Sans pub, hors ligne.</string>
+    <string name="noise_white">Bruit blanc</string>
+    <string name="noise_white_hint">Souffle régulier qui couvre voix et bruits</string>
+    <string name="noise_pink">Bruit rose</string>
+    <string name="noise_pink_hint">Plus doux, comme une pluie continue</string>
+    <string name="noise_brown">Bruit brun</string>
+    <string name="noise_brown_hint">Grondement grave, comme une cascade</string>
+    <string name="play">Lecture</string>
+    <string name="stop">Arrêt</string>
+    <string name="volume">Volume</string>
+    <string name="timer">Minuterie</string>
+    <string name="timer_off">Aucune</string>
+    <string name="minutes">%d min</string>
+    <string name="hours">%d h</string>
+    <string name="stops_in">Arrêt dans %s</string>
+    <string name="channel_name">Lecture</string>
+    <string name="notification_playing">Lecture en cours, touchez pour ouvrir</string>
+</resources>

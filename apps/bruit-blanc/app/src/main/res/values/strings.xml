@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">White Noise</string>
+    <string name="tagline">Sleep, focus, calm. No ads, works offline.</string>
+    <string name="noise_white">White noise</string>
+    <string name="noise_white_hint">Even hiss that masks voices and noise</string>
+    <string name="noise_pink">Pink noise</string>
+    <string name="noise_pink_hint">Softer, like steady rain</string>
+    <string name="noise_brown">Brown noise</string>
+    <string name="noise_brown_hint">Deep rumble, like a waterfall</string>
+    <string name="play">Play</string>
+    <string name="stop">Stop</string>
+    <string name="volume">Volume</string>
+    <string name="timer">Sleep timer</string>
+    <string name="timer_off">Off</string>
+    <string name="minutes">%d min</string>
+    <string name="hours">%d h</string>
+    <string name="stops_in">Stops in %s</string>
+    <string name="channel_name">Playback</string>
+    <string name="notification_playing">Playing, tap to open</string>
+</resources>
