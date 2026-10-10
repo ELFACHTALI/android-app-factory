@@ -86,14 +86,17 @@ jobs:
             --out-file="$RUNNER_TEMP/upload.jks"
           PW="$(gcloud secrets versions access latest --secret=bruit-blanc-upload-password)"
           echo "::add-mask::$PW"
-          TASKS=bundleRelease
-          if [ "$PLAY_PUBLISH" = "true" ]; then
-            TASKS="publishReleaseBundle publishReleaseListing"
+          export UPLOAD_KEYSTORE_PATH="$RUNNER_TEMP/upload.jks" UPLOAD_KEYSTORE_PASSWORD="$PW" \
+            UPLOAD_KEY_PASSWORD="$PW" UPLOAD_KEY_ALIAS=upload
+          trap 'rm -f "$RUNNER_TEMP/upload.jks"' EXIT
+          if [ "$PLAY_PUBLISH" != "true" ]; then
+            ./gradlew --no-daemon bundleRelease
+            exit 0
           fi
-          UPLOAD_KEYSTORE_PATH="$RUNNER_TEMP/upload.jks" UPLOAD_KEYSTORE_PASSWORD="$PW" \
-            UPLOAD_KEY_PASSWORD="$PW" UPLOAD_KEY_ALIAS=upload \
-            ./gradlew --no-daemon $TASKS
-          rm -f "$RUNNER_TEMP/upload.jks"
+          # Deux appels séparés : chacun valide sa propre « edit » Play. Le bundle part ainsi en
+          # test interne même si la fiche échoue (voir docs/JOURNAL.md).
+          ./gradlew --no-daemon publishReleaseBundle
+          ./gradlew --no-daemon publishReleaseListing
 
       - name: Upload release bundle
         if: steps.gcp.outcome == 'success'

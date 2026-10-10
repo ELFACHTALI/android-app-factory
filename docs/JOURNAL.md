@@ -6,6 +6,13 @@ Format : **Symptôme** (ce qu'on a vu), **Cause**, **Résolution**, **Référenc
 
 ---
 
+## 2026-10-10 · Publication Play : 403 au commit, puis « Listing for language 'en-US' not found »
+
+- **Symptôme** : (1) premier run avec `PLAY_PUBLISH: 'true'` : le bundle est envoyé, puis `commitEdit` échoue en « 403 The caller does not have permission ». (2) Relance quelques minutes après : `publishReleaseListing` échoue en « 404 Listing for language 'en-US' not found » sur `featureGraphic`, et rien n'est validé.
+- **Cause** : (1) le compte de service venait d'être invité dans la Play Console ; Google indique que les autorisations peuvent mettre jusqu'à 24 h à s'appliquer à l'API. (2) La fiche anglaise n'existe pas encore dans la Play Console (l'app a été créée en fr-FR) et Gradle Play Publisher envoie les visuels en parallèle des textes : l'envoi d'une image sur une langue absente échoue. Comme le bundle et la fiche partageaient la même « edit », l'erreur de la fiche annulait aussi le bundle.
+- **Résolution** : le bundle et la fiche sont publiés par deux appels Gradle séparés, donc deux « edits » ; le bundle part même si la fiche échoue. La langue anglaise (en-US) est ajoutée une fois à la main dans la Play Console (Fiche Play Store principale > Gérer les traductions), après quoi la CI met à jour les deux langues.
+- **Référence** : `.github/workflows/bruit-blanc.yml`, étape « Signed release bundle ».
+
 ## 2026-10-10 · Artefacts GitHub Actions impossibles à télécharger depuis la session Claude
 
 - **Symptôme** : `gh run download` échoue avec « Forbidden » sur le stockage des artefacts. Impossible de vérifier les captures d'écran générées par la CI.
