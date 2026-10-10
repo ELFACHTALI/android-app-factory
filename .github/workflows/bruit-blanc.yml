@@ -8,11 +8,10 @@ on:
     paths: ['apps/bruit-blanc/**', '.github/workflows/bruit-blanc.yml']
   workflow_dispatch:
 
-# Filled in after running scripts/setup-signing.sh in Cloud Shell (not secret).
-# While empty, the signed bundle is skipped.
+# Output of scripts/setup-signing.sh (not secret).
 env:
-  WIF_PROVIDER: ''
-  SIGNING_SERVICE_ACCOUNT: ''
+  WIF_PROVIDER: projects/999140038701/locations/global/workloadIdentityPools/github/providers/github-actions
+  SIGNING_SERVICE_ACCOUNT: github-signing@android-app-factory-511217.iam.gserviceaccount.com
 
 jobs:
   build:
