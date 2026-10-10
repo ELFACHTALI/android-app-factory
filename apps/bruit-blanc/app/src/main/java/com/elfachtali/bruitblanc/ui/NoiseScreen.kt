@@ -46,7 +46,7 @@ import com.elfachtali.bruitblanc.audio.NoiseType
 import com.elfachtali.bruitblanc.audio.Playback
 import kotlinx.coroutines.delay
 
-private data class NoiseOption(val type: NoiseType, @StringRes val name: Int, @StringRes val hint: Int)
+private data class NoiseOption(val type: NoiseType, @param:StringRes val name: Int, @param:StringRes val hint: Int)
 
 private val noiseOptions = listOf(
     NoiseOption(NoiseType.WHITE, R.string.noise_white, R.string.noise_white_hint),

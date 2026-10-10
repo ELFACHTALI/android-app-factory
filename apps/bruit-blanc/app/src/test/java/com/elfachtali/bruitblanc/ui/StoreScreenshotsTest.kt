@@ -29,16 +29,16 @@ class StoreScreenshotsTest {
         Playback.setTimer(null)
     }
 
-    @Test @Config(qualifiers = "fr-w411dp-h820dp-xxhdpi-night")
+    @Test @Config(qualifiers = "fr-w411dp-h820dp-night-xxhdpi")
     fun frenchHome() = shot("fr-FR", 1) { }
 
-    @Test @Config(qualifiers = "fr-w411dp-h820dp-xxhdpi-night")
+    @Test @Config(qualifiers = "fr-w411dp-h820dp-night-xxhdpi")
     fun frenchTimer() = shot("fr-FR", 2) { Playback.setType(NoiseType.BROWN); Playback.setTimer(60) }
 
-    @Test @Config(qualifiers = "en-w411dp-h820dp-xxhdpi-night")
+    @Test @Config(qualifiers = "en-w411dp-h820dp-night-xxhdpi")
     fun englishHome() = shot("en-US", 1) { }
 
-    @Test @Config(qualifiers = "en-w411dp-h820dp-xxhdpi-night")
+    @Test @Config(qualifiers = "en-w411dp-h820dp-night-xxhdpi")
     fun englishTimer() = shot("en-US", 2) { Playback.setType(NoiseType.BROWN); Playback.setTimer(60) }
 
     private fun shot(locale: String, index: Int, setUp: () -> Unit) {
