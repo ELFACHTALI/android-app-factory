@@ -12,9 +12,9 @@ on:
 env:
   WIF_PROVIDER: projects/999140038701/locations/global/workloadIdentityPools/github/providers/github-actions
   SIGNING_SERVICE_ACCOUNT: github-signing@android-app-factory-511217.iam.gserviceaccount.com
-  # Passe à 'true' quand ce compte de service est invité dans la Play Console : chaque push sur
-  # main publie alors le bundle et la fiche sur la piste de test interne.
-  PLAY_PUBLISH: 'false'
+  # Ce compte de service est invité dans la Play Console : chaque push sur main publie le bundle
+  # et la fiche sur la piste de test interne. Mettre 'false' pour ne faire que le bundle signé.
+  PLAY_PUBLISH: 'true'
 
 jobs:
   build:

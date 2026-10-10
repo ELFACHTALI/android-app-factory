@@ -10,7 +10,7 @@ L'usine prend un nom et une idée d'app, puis des agents Claude écrivent l'app,
 | CI GitHub Actions | Faite : tests, lint, APK debug, bundle signé, fiche publiée sur la branche `store-listing` |
 | Clé d'upload | Faite : dans Secret Manager (projet `android-app-factory-511217`), lue via Workload Identity Federation |
 | Création de l'app dans la Play Console | Faite à la main (Google ne permet pas de la créer par API) ; version 8 (1.0.0) déposée à la main en test interne |
-| Publication automatique (API Play Developer) | Prête dans la CI (Gradle Play Publisher), désactivée tant que `PLAY_PUBLISH` vaut `false` : il faut inviter le compte de service dans la Play Console |
+| Publication automatique (API Play Developer) | Active : chaque push sur `main` publie en test interne (Gradle Play Publisher, compte de service `github-signing` invité dans la Play Console) |
 | Usine (service Cloud Run + agents) | À faire |
 | GitHub App de l'usine (création des dépôts) | À faire |
 
